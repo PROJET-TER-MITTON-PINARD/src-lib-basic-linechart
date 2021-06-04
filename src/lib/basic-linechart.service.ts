@@ -49,12 +49,6 @@ export class DataService {
     return L;
 
   }
-  
-  public parseBool(s: string):number {
-    if(s=='ON') return 1;
-    else if (s=='OFF') return 0;
-    else return -1;
-  }
 
   public generateData(label:string, color:string, style: "both"|"line"|"area",interpolation: "step"|"linear", f: (s:string)=>number):Data{
     let d: DATA<number>[] = this.parse<number>(this.str,label, f);
@@ -68,6 +62,12 @@ export class DataService {
       interpolation: interpolation
     }
     return da;
+  }
+
+  public parseBool(s: string):number {
+    if(s=='ON') return 1;
+    else if (s=='OFF') return 0;
+    else return -1;
   }
 
   private generateExample(){
