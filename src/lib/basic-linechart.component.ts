@@ -11,12 +11,6 @@ export interface Data {
   interpolation: "linear" | "step";
 }
 
-export function parseBool(s: string) {
-  if(s=='ON') return 1;
-  else if (s=='OFF') return 0;
-  else return -1;
-}
-
 @Component({
   selector: 'lib-basic-linechart',
   template: `

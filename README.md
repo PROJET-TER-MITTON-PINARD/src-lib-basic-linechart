@@ -40,7 +40,6 @@ No parameters are required.
 ### Interface Data
 
 Represents one dataset. You can add an array of dataset in the component.
-
 ```
 interface Data {
   label: string;
@@ -53,12 +52,18 @@ interface Data {
 
 ### DataService
 
-Contains str: string, which is a multiple dataset.
+Contains function parseBool that you can use in generateData for boolean value.
 
-Contains function generateData, which you can use to parse Data from str :
-
+Contains function generateData, which you can use to parse Data from a local dataset :
 ```
 public generateData(label:string, color:string, style: "both"|"line"|"area",interpolation: "step"|"linear", f: (s:string)=>number):Data
+```
+/!\ Fill parameter f with parseBool or parseFloat
+
+Examples : 
+```
+generateData("PC6","#124568","both", "step",parseBool)
+generateData("Temperature_Salon", "purple", "line", "linear", parseFloat)
 ```
 
 Contains dataExamples(:Data[]). You can import them to test the component (show in the example below).

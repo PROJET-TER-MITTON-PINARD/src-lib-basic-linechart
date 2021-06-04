@@ -1,6 +1,12 @@
 import { Injectable } from '@angular/core';
-import { Data, parseBool } from './basic-linechart.component';
+import { Data } from './basic-linechart.component';
 import {str} from '../data';
+
+export function parseBool(s: string):number {
+  if(s=='ON') return 1;
+  else if (s=='OFF') return 0;
+  else return -1;
+}
 
 interface DATA<T>{
   timestamp: number;
@@ -14,7 +20,7 @@ interface DATA<T>{
 
 export class DataService {
 
-  str: string = str;
+  private str: string = str;
 
   public dataExample1: Data[] = []; 
   public dataExample2: Data[] = [];
