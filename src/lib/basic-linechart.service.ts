@@ -89,8 +89,8 @@ export class DataService {
     
     this.dataExample2.push(this.generateData("PC6","#124568","both", "step",parseBool));
     this.dataExample1.push(da2);
-    this.dataExample4.push(this.generateData("Presence_Salon", "pink", "line", "step", parseBool));
-    this.dataExample3.push(this.generateData("Temperature_Salon", "purple", "line", "linear", parseFloat));
+    this.dataExample4.push(this.generateData("Temperature_Salon", "purple", "line", "linear", parseFloat));
+    this.dataExample3.push(this.generateData("Presence_Salon", "pink", "line", "step", parseBool));
     this.dataExample3.push(this.generateData("PC6","#124568","both", "step",parseBool));
     this.dataExample5.push(this.generateData("Temperature_Cuisine", "gold", "line", "step", parseFloat));
     this.dataExample6.push(this.generateData("Presence_Cuisine", "purple", "both", "step", parseBool));
