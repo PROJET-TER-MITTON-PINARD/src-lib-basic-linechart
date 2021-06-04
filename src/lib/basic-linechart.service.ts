@@ -49,7 +49,6 @@ export class DataService {
     return L;
 
   }
-
   
   public parseBool(s: string):number {
     if(s=='ON') return 1;
