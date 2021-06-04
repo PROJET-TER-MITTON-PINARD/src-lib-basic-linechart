@@ -42,7 +42,7 @@ No parameters are required.
 Represents one dataset. You can add an array of dataset in the component.
 
 ```
-export interface Data {
+interface Data {
   label: string;
   values: [number,number][]; //[timestamp,value]
   color: string;
@@ -53,7 +53,15 @@ export interface Data {
 
 ### DataService
 
-Contains dataExamples. You can import them to test the component (show in the example below).
+Contains str: string, which is a multiple dataset.
+
+Contains function generateData, which you can use to parse Data from str :
+
+```
+public generateData(label:string, color:string, style: "both"|"line"|"area",interpolation: "step"|"linear", f: (s:string)=>number):Data
+```
+
+Contains dataExamples(:Data[]). You can import them to test the component (show in the example below).
 
 ## Example 
 

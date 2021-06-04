@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Data, parseBool } from './basic-linechart.component';
 import {str} from '../data';
 
-export interface DATA<T>{
+interface DATA<T>{
   timestamp: number;
   value: T;
   sensorId: string;
@@ -25,10 +25,10 @@ export class DataService {
   public dataExample7: Data[] = [];
 
   constructor() {
-    this.generateData();
+    this.generateExample();
   }
 
-  parse<T>(str: string, sensorId: string, f: (s: string) => T): DATA<T>[] {
+  private parse<T>(str: string, sensorId: string, f: (s: string) => T): DATA<T>[] {
 
     const L: DATA < T > [] = str.trim().split("\n").map(s => s.trim()).filter(s => s!=="")
 
@@ -49,17 +49,21 @@ export class DataService {
 
   }
 
-  private generateData(){
-    let d1: DATA<number>[] = this.parse<number>(this.str,"PC6", parseBool);
-    let v1: [number,number][] = [];
-    d1.forEach(element =>v1.push([element.timestamp,element.value]));
-    let da1: Data = {
-      label: "PC6",
-      values: v1,
-      color: "#124568",
-      style: "both",
-      interpolation: "step"
+  public generateData(label:string, color:string, style: "both"|"line"|"area",interpolation: "step"|"linear", f: (s:string)=>number):Data{
+    let d: DATA<number>[] = this.parse<number>(this.str,label, f);
+    let v: [number,number][] = [];
+    d.forEach(element =>v.push([element.timestamp,element.value]));
+    let da: Data = {
+      label: label,
+      values: v,
+      color: color,
+      style: style,
+      interpolation: interpolation
     }
+    return da;
+  }
+
+  private generateExample(){
     let d2: DATA<number>[] = this.parse<number>(this.str,"PC5", parseBool);
     let v2: [number,number][] = [];
     d2.forEach(element =>v2.push([element.timestamp,element.value]));
@@ -76,70 +80,15 @@ export class DataService {
       style: "line",
       interpolation: "linear"
     }
-    let d3: DATA<number>[] = this.parse<number>(this.str,"Presence_Salon", parseBool);
-    let v3: [number,number][] = [];
-    d3.forEach(element =>v3.push([element.timestamp,element.value]));
-    let da3: Data = {
-      label: "Presence_Salon",
-      values: v3,
-      color: "pink",
-      style: "line",
-      interpolation: "step"
-    }
-
-    let d4: DATA<number>[] = this.parse<number>(this.str,"Temperature_Salon",  parseFloat);
-    let v4: [number,number][] = [];
-    d4.forEach(element =>v4.push([element.timestamp,element.value]));
-    let da4: Data = {
-      label: "Temperature_Salon",
-      values: v4,
-      color: "purple",
-      style: "line",
-      interpolation: "linear"
-    }
-
-    let d5: DATA<number>[] = this.parse<number>(this.str,"Temperature_Cuisine",  parseFloat);
-    let v5: [number,number][] = [];
-    d5.forEach(element =>v5.push([element.timestamp,element.value]));
-    let da5: Data = {
-      label: "Temperature_Cuisine",
-      values: v5,
-      color: "gold",
-      style: "line",
-      interpolation: "step"
-    }
-
-    let d6: DATA<number>[] = this.parse<number>(this.str,"Presence_Cuisine",  parseBool);
-    let v6: [number,number][] = [];
-    d6.forEach(element =>v6.push([element.timestamp,element.value]));
-    let da6: Data = {
-      label: "Presence_Cuisine",
-      values: v6,
-      color: "purple",
-      style: "both",
-      interpolation: "step"
-    }
-
-    let d7: DATA<number>[] = this.parse<number>(this.str,"Presence_SDB",  parseBool);
-    let v7: [number,number][] = [];
-    d7.forEach(element =>v7.push([element.timestamp,element.value]));
-    let da7: Data = {
-      label: "Presence_SDB",
-      values: v7,
-      color: "black",
-      style: "area",
-      interpolation: "step"
-    }
     
-    
-    this.dataExample2.push(da1);
+    this.dataExample2.push(this.generateData("PC6","#124568","both", "step",parseBool));
     this.dataExample1.push(da2);
-    this.dataExample4.push(da4);
-    this.dataExample3.push(da3);
-    this.dataExample3.push(da1);
-    this.dataExample5.push(da5);
-    this.dataExample6.push(da6);
-    this.dataExample7.push(da7);
+    this.dataExample4.push(this.generateData("Presence_Salon", "pink", "line", "step", parseBool));
+    this.dataExample3.push(this.generateData("Temperature_Salon", "purple", "line", "linear", parseFloat));
+    this.dataExample3.push(this.generateData("PC6","#124568","both", "step",parseBool));
+    this.dataExample5.push(this.generateData("Temperature_Cuisine", "gold", "line", "step", parseFloat));
+    this.dataExample6.push(this.generateData("Presence_Cuisine", "purple", "both", "step", parseBool));
+    this.dataExample7.push(this.generateData("Presence_SDB", "black", "area", "step", parseBool));
   }
 
   private getRandomInt(x:number){
