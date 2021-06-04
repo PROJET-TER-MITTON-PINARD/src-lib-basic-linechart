@@ -2,11 +2,6 @@ import { Injectable } from '@angular/core';
 import { Data } from './basic-linechart.component';
 import {str} from '../data';
 
-export function parseBool(s: string):number {
-  if(s=='ON') return 1;
-  else if (s=='OFF') return 0;
-  else return -1;
-}
 
 interface DATA<T>{
   timestamp: number;
@@ -55,6 +50,13 @@ export class DataService {
 
   }
 
+  
+  public parseBool(s: string):number {
+    if(s=='ON') return 1;
+    else if (s=='OFF') return 0;
+    else return -1;
+  }
+
   public generateData(label:string, color:string, style: "both"|"line"|"area",interpolation: "step"|"linear", f: (s:string)=>number):Data{
     let d: DATA<number>[] = this.parse<number>(this.str,label, f);
     let v: [number,number][] = [];
@@ -70,7 +72,7 @@ export class DataService {
   }
 
   private generateExample(){
-    let d2: DATA<number>[] = this.parse<number>(this.str,"PC5", parseBool);
+    let d2: DATA<number>[] = this.parse<number>(this.str,"PC5", this.parseBool);
     let v2: [number,number][] = [];
     d2.forEach(element =>v2.push([element.timestamp,element.value]));
     let x:number = 0;
@@ -87,14 +89,14 @@ export class DataService {
       interpolation: "linear"
     }
     
-    this.dataExample2.push(this.generateData("PC6","#124568","both", "step",parseBool));
+    this.dataExample2.push(this.generateData("PC6","#124568","both", "step",this.parseBool));
     this.dataExample1.push(da2);
     this.dataExample4.push(this.generateData("Temperature_Salon", "purple", "line", "linear", parseFloat));
-    this.dataExample3.push(this.generateData("Presence_Salon", "pink", "line", "step", parseBool));
-    this.dataExample3.push(this.generateData("PC6","#124568","both", "step",parseBool));
+    this.dataExample3.push(this.generateData("Presence_Salon", "pink", "line", "step", this.parseBool));
+    this.dataExample3.push(this.generateData("PC6","#124568","both", "step",this.parseBool));
     this.dataExample5.push(this.generateData("Temperature_Cuisine", "gold", "line", "step", parseFloat));
-    this.dataExample6.push(this.generateData("Presence_Cuisine", "purple", "both", "step", parseBool));
-    this.dataExample7.push(this.generateData("Presence_SDB", "black", "area", "step", parseBool));
+    this.dataExample6.push(this.generateData("Presence_Cuisine", "purple", "both", "step", this.parseBool));
+    this.dataExample7.push(this.generateData("Presence_SDB", "black", "area", "step", this.parseBool));
   }
 
   private getRandomInt(x:number){
