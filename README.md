@@ -1,7 +1,8 @@
 # BasicLinechart
 
 This library was generated with [Angular CLI](https://github.com/angular/angular-cli) version 12.0.3.
-Example on <a href="https://projet-ter-mitton-pinard.github.io/"> https://projet-ter-mitton-pinard.github.io/</a>
+
+Example on : <a href="https://projet-ter-mitton-pinard.github.io/"> https://projet-ter-mitton-pinard.github.io/</a>
 
 ## Installation
 
