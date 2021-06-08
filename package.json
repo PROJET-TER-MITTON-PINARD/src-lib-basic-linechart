@@ -12,7 +12,11 @@
     "angular",
     "typescript",
     "linechart",
-    "d3js",
+    "svg",
+    "zoom",
+    "visualization",
+    "scrollbar",
+    "zoom",
     "component"
   ],
   "peerDependencies": {
