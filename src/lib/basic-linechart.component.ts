@@ -1,4 +1,4 @@
-import { Component, ElementRef, EventEmitter, Input, OnInit, Output, Renderer2, SimpleChanges, ViewChild } from '@angular/core';
+import { Component, ElementRef, EventEmitter, HostListener, Input, OnInit, Output, Renderer2, SimpleChanges, ViewChild } from '@angular/core';
 import {ScaleTime, ScaleLinear} from 'd3-scale';
 import {Selection} from 'd3-selection';
 import * as d3 from 'd3';
@@ -14,9 +14,11 @@ export interface Data {
 @Component({
   selector: 'lib-basic-linechart',
   template: `
+  <div #element>
   <h2>{{ title }}</h2>
   <svg #root [attr.width]="width" [attr.height]="height"></svg>
   <div #zone><div #scroll></div></div>
+  </div>
   `,
   styles: [
   ]
@@ -26,16 +28,20 @@ export class BasicLinechartComponent implements OnInit {
   @Input() height: number = 200; 
   @Input() data: Data[] = [];
   @Input() domain: [number, number] = [0,0];
+  @Input() speedZoom: number = 0.2;
   @ViewChild('root') timeline!: ElementRef;
   @ViewChild('scroll') scrollbar!: ElementRef;
   @ViewChild('zone') zoneScrollbar!: ElementRef;
+  @ViewChild('element') compo!: ElementRef;
   @Input() range: [number,number] = [0,0];
   @Output() rangeChange = new EventEmitter<[number,number]>();
   @Input() currentTime: number = 0;
   @Output() currentTimeChange = new EventEmitter<number>();
+  
+
 
   public title:string = 'Timeline : ';
-  private margin = { top: 20, right: 20, bottom: 30, left: 50 }; //marge interne au svg 
+  private margin = { top: 20, right: 20, bottom: 20, left: 20 }; //marge interne au svg 
   private dataZoom: Data[] = [];
   private idZoom: number = 0;
   private minTime: number = 0;
@@ -54,6 +60,18 @@ export class BasicLinechartComponent implements OnInit {
   private currentTimeSelected:boolean = false;
   private scrollbarSelected:boolean = false;
   private lastPos: number = 0;
+  private zoomSelected: boolean = false;
+
+  @HostListener('window:keydown', ['$event'])
+  handleKeyDown(event: KeyboardEvent){
+    if(event.ctrlKey&&!this.zoomSelected){
+      this.zoomSelected = true;
+    } 
+  }
+  @HostListener('window:keyup', ['$event'])
+  handleKeyUp(){
+    this.zoomSelected = false;
+  }
   
   
   constructor(private renderer: Renderer2) {   
@@ -82,6 +100,7 @@ export class BasicLinechartComponent implements OnInit {
       this.svgHeight = (h - this.margin.top) - this.margin.bottom;
     }
     this.data.forEach((element,index) => this.buildStyleData(element,index));
+    this.controlSpeedZoom();
     this.buildZoom(); 
     this.buildEvent();
     this.drawToolTips();
@@ -98,7 +117,7 @@ export class BasicLinechartComponent implements OnInit {
   public ngOnChanges(changes: SimpleChanges): void {
     if (changes.data&&!changes.data.firstChange) this.updateChart();
     if ((changes.data&&!changes.data.firstChange&&this.range[0]!=0&&this.range[1]!=0)||(changes.range&&!changes.range.firstChange)) {
-      this.idZoom=Math.round(Math.log(this.lengthTime/(this.range[1]-this.range[0]))/Math.log(1.5));
+      this.idZoom=Math.round(Math.log(this.lengthTime/(this.range[1]-this.range[0]))/Math.log(1+this.speedZoom));
       this.range=this.controlRange(this.range[0],this.range[1]-this.range[0]);
       if(this.data.length!=0){
         this.updateDataZoom(this.range[0],this.range[1]);
@@ -120,7 +139,7 @@ export class BasicLinechartComponent implements OnInit {
       else this.showInfo(event);
     })
     .on("mouseleave", () => { this.currentTimeSelected = false; this.hideInfo() })
-    .on("wheel", (event: WheelEvent) => {if(this.data.length!=0)this.activeZoom(event)})
+    .on("wheel", (event: WheelEvent) => {if(this.data.length!=0)if(this.zoomSelected){this.activeZoom(event)}})
     .on("mouseup", () => this.currentTimeSelected=false)
     .on("mouseover", (event: MouseEvent) => event.preventDefault());
   }
@@ -347,10 +366,12 @@ export class BasicLinechartComponent implements OnInit {
     this.scrollbar.nativeElement.style.height = "20px";
     this.scrollbar.nativeElement.style.backgroundColor = "grey";
     this.scrollbar.nativeElement.style.borderRadius = "10px";
+    this.compo.nativeElement.style.width = this.svgWidth+this.margin.left+"px";
+    this.compo.nativeElement.style.padding = "10px 10px 10px 10px";
     this.renderer.listen(this.scrollbar.nativeElement, 'mousedown', (event:MouseEvent) => this.activeScrollbar(event));
-    this.renderer.listen(this.zoneScrollbar.nativeElement, 'mouseleave', () => this.desactiveScrollbar());
-    this.renderer.listen(this.zoneScrollbar.nativeElement, 'mouseup', () => this.desactiveScrollbar());
-    this.renderer.listen(this.zoneScrollbar.nativeElement,'mousemove', (event:MouseEvent) => this.updateRange(event));
+    this.renderer.listen(this.compo.nativeElement, 'mouseleave', () => this.desactiveScrollbar());
+    this.renderer.listen(this.compo.nativeElement, 'mouseup', () => this.desactiveScrollbar());
+    this.renderer.listen(this.compo.nativeElement,'mousemove', (event:MouseEvent) => this.updateRange(event));
   }
 
   /**
@@ -539,8 +560,10 @@ export class BasicLinechartComponent implements OnInit {
    * @param {MouseEvent} event 
    */ 
   private activeScrollbar(event: MouseEvent): void{
-    this.scrollbarSelected=true;
-    this.lastPos=event.clientX-this.margin.left;
+    if(this.idZoom!=0){
+      this.scrollbarSelected=true;
+      this.lastPos=event.clientX-this.margin.left;
+    }
   }
 
   /**
@@ -602,7 +625,7 @@ export class BasicLinechartComponent implements OnInit {
    */
   private activeZoom(event: WheelEvent): void{
     event.preventDefault();
-    let lastLengthLocalTime = this.lengthTime / Math.pow(1.5,this.idZoom);
+    let lastLengthLocalTime = this.lengthTime / Math.pow(1+this.speedZoom,this.idZoom);
     let lastMinLocalTime = this.scale(this.dataZoom,"xMin");
     if((event.deltaY>0&&this.idZoom>0)||event.deltaY<0){
       if(event.deltaY>0&&this.idZoom>0){
@@ -611,7 +634,7 @@ export class BasicLinechartComponent implements OnInit {
         this.idZoom++; 
       }
       let pos = this.scaleX.invert(event.clientX-this.margin.left).getTime();
-      let lengthLocalTime = this.lengthTime / Math.pow(1.5,this.idZoom);
+      let lengthLocalTime = this.lengthTime / Math.pow(1+this.speedZoom,this.idZoom);
       if(lengthLocalTime>200){
         let minLocalTime = (lastMinLocalTime-pos)*(lengthLocalTime/lastLengthLocalTime) + pos;
         this.range = this.controlRange(minLocalTime,lengthLocalTime);
@@ -680,6 +703,17 @@ export class BasicLinechartComponent implements OnInit {
     let s = new Option().style;
     s.color = color;
     return s.color!="";
+  }
+  
+  /**
+   * Control the speedZoom if it isn't between 0 and 1.
+   */
+  private controlSpeedZoom(): void{
+    if(this.speedZoom<=0){
+      this.speedZoom=0.1;
+    }else if(this.speedZoom>1){
+      this.speedZoom=1;
+    }
   }
 
   /** 

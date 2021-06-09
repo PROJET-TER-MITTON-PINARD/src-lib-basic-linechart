@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 import { Data } from './basic-linechart.component';
-import {str} from '../data';
 
 
 interface DATA<T>{
@@ -15,7 +14,61 @@ interface DATA<T>{
 
 export class DataService {
 
-  private str: string = str;
+  private str: string = `  
+  "2016-07-25 15:47:24,459";"PC6";"OFF"
+  "2016-07-25 19:47:24,459";"PC6";"ON"
+  "2016-07-26 05:47:24,459";"PC6";"OFF"
+  "2016-07-26 06:47:24,459";"PC6";"ON"
+  "2016-07-26 06:59:24,459";"PC6";"OFF"
+  "2016-07-26 18:21:24,459";"PC6";"ON"
+  "2016-07-27 11:00:24,459";"PC6";"OFF"
+  "2016-07-28 08:32:24,459";"PC6";"ON"
+  "2016-07-28 18:15:24,459";"PC6";"OFF"
+  "2016-07-29 09:06:24,459";"PC6";"ON"
+  "2016-07-29 19:36:24,459";"PC6";"OFF"
+  "2016-07-25 15:47:24,459";"PC5";"OFF"
+  "2016-07-25 22:47:24,459";"PC5";"ON"
+  "2016-07-25 22:55:24,459";"PC5";"OFF"
+  "2016-07-26 07:29:24,459";"PC5";"ON"
+  "2016-07-26 20:59:24,459";"PC5";"OFF"
+  "2016-07-27 06:21:24,459";"PC5";"ON"
+  "2016-07-27 13:00:24,459";"PC5";"OFF"
+  "2016-07-28 06:32:24,459";"PC5";"ON"
+  "2016-07-28 14:15:24,459";"PC5";"OFF"
+  "2016-07-29 06:06:24,459";"PC5";"ON"
+  "2016-07-29 19:36:24,459";"PC5";"OFF"
+  "2016-07-25 15:47:19,423";"Temperature_Cuisine";"26.7"
+  "2016-07-25 15:48:20,279";"Temperature_Cuisine";"26.740000000000002"
+  "2016-07-25 15:50:00,776";"Temperature_Cuisine";"26.76"
+  "2016-07-25 15:55:00,275";"Temperature_Cuisine";"26.72"
+  "2016-07-25 16:10:00,202";"Temperature_Cuisine";"26.68"
+  "2016-07-25 16:15:00,197";"Temperature_Cuisine";"26.64"
+  "2016-07-25 16:24:50,493";"Temperature_Cuisine";"26.560000000000002"
+  "2016-07-25 16:29:50,204";"Temperature_Cuisine";"26.5"
+  "2016-07-25 16:34:50,177";"Temperature_Cuisine";"26.46"
+  "2016-07-25 16:39:50,128";"Temperature_Cuisine";"26.5"
+  "2016-07-25 16:44:50,065";"Temperature_Cuisine";"26.52"
+  "2016-07-25 15:47:19,423";"Temperature_Salon";"26.34"
+  "2016-07-25 15:48:05,264";"Temperature_Salon";"26.38"
+  "2016-07-25 15:53:05,275";"Temperature_Salon";"26.36"
+  "2016-07-25 15:58:05,252";"Temperature_Salon";"26.34"
+  "2016-07-25 16:08:05,234";"Temperature_Salon";"26.32"
+  "2016-07-25 16:13:05,237";"Temperature_Salon";"26.28"
+  "2016-07-25 16:23:05,172";"Temperature_Salon";"26.22"
+  "2016-07-25 16:28:05,244";"Temperature_Salon";"26.16"
+  "2016-07-25 16:29:55,490";"Temperature_Salon";"26.14"
+  "2016-07-25 15:47:19,423";"PC3";"ON"
+  "2016-07-25 15:48:20,279";"PC3";"OFF"
+  "2016-07-25 15:50:00,776";"PC3";"ON"
+  "2016-07-25 15:55:00,275";"PC3";"OFF"
+  "2016-07-25 16:10:00,202";"PC3";"ON"
+  "2016-07-25 16:15:00,197";"PC3";"OFF"
+  "2016-07-25 16:24:50,493";"PC3";"ON"
+  "2016-07-25 16:29:50,204";"PC3";"OFF"
+  "2016-07-25 16:34:50,177";"PC3";"ON"
+  "2016-07-25 16:39:50,128";"PC3";"OFF"
+  "2016-07-25 16:44:50,065";"PC3";"ON"
+  `;
 
   public dataExample1: Data[] = []; 
   public dataExample2: Data[] = [];
@@ -23,10 +76,9 @@ export class DataService {
   public dataExample4: Data[] = [];
   public dataExample5: Data[] = [];
   public dataExample6: Data[] = [];
-  public dataExample7: Data[] = [];
 
   constructor() {
-    this.generateExample();
+    this.generateExample(this.str);
   }
 
   private parse<T>(str: string, sensorId: string, f: (s: string) => T): DATA<T>[] {
@@ -50,8 +102,8 @@ export class DataService {
 
   }
 
-  public generateData(label:string, color:string, style: "both"|"line"|"area",interpolation: "step"|"linear", f: (s:string)=>number):Data{
-    let d: DATA<number>[] = this.parse<number>(this.str,label, f);
+  public generateData(str:string, label:string, color:string, style: "both"|"line"|"area",interpolation: "step"|"linear", f: (s:string)=>number):Data{
+    let d: DATA<number>[] = this.parse<number>(str,label, f);
     let v: [number,number][] = [];
     d.forEach(element =>v.push([element.timestamp,element.value]));
     let da: Data = {
@@ -70,8 +122,8 @@ export class DataService {
     else return -1;
   }
 
-  private generateExample(){
-    let d2: DATA<number>[] = this.parse<number>(this.str,"PC5", this.parseBool);
+  private generateExample(str:string){
+    let d2: DATA<number>[] = this.parse<number>(str,"PC5", this.parseBool);
     let v2: [number,number][] = [];
     d2.forEach(element =>v2.push([element.timestamp,element.value]));
     let x:number = 0;
@@ -81,21 +133,20 @@ export class DataService {
     }
       );
     let da2: Data = {
-      label: "PC5",
+      label: "PC4",
       values: v2,
       color: "purple",
       style: "line",
       interpolation: "linear"
     }
     
-    this.dataExample2.push(this.generateData("PC6","#124568","both", "step",this.parseBool));
+    this.dataExample2.push(this.generateData(str,"PC6","#124568","both", "step",this.parseBool));
     this.dataExample1.push(da2);
-    this.dataExample4.push(this.generateData("Temperature_Salon", "purple", "line", "linear", parseFloat));
-    this.dataExample3.push(this.generateData("Presence_Salon", "pink", "line", "step", this.parseBool));
-    this.dataExample3.push(this.generateData("PC6","#124568","both", "step",this.parseBool));
-    this.dataExample5.push(this.generateData("Temperature_Cuisine", "gold", "line", "step", parseFloat));
-    this.dataExample6.push(this.generateData("Presence_Cuisine", "purple", "both", "step", this.parseBool));
-    this.dataExample7.push(this.generateData("Presence_SDB", "black", "area", "step", this.parseBool));
+    this.dataExample4.push(this.generateData(str,"Temperature_Salon", "purple", "line", "linear", parseFloat));
+    this.dataExample3.push(this.generateData(str,"PC5", "pink", "line", "step", this.parseBool));
+    this.dataExample3.push(this.generateData(str,"PC6","#124568","both", "step",this.parseBool));
+    this.dataExample5.push(this.generateData(str,"Temperature_Cuisine", "gold", "line", "step", parseFloat));
+    this.dataExample6.push(this.generateData(str,"PC3","green","both", "step",this.parseBool));
   }
 
   private getRandomInt(x:number){
