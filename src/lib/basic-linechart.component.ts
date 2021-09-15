@@ -2,7 +2,6 @@ import { Component, ElementRef, EventEmitter, HostListener, Input, OnInit, Outpu
 import {ScaleTime, ScaleLinear} from 'd3-scale';
 import {Selection} from 'd3-selection';
 import * as d3 from 'd3';
-import { fromEvent } from 'rxjs';
 
 /**
  * Data's format for the component
