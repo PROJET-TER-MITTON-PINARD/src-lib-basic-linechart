@@ -1,10 +1,24 @@
 import { Injectable } from '@angular/core';
 import { Data } from './basic-linechart.component';
 
-
+/**
+ * DATA's format when we extract data from a string 
+ */
 interface DATA<T>{
+
+  /**
+   * Timestamp
+   */
   timestamp: number;
+  
+  /**
+   * Value
+   */
   value: T;
+  
+  /**
+   * Label of sensor in data 
+   */
   sensorId: string;
 }
 
@@ -12,8 +26,14 @@ interface DATA<T>{
   providedIn: 'root'
 })
 
+/**
+ * Service that give 6 example of dataset and function to parse DATA and Data from string.
+ */
 export class DataService {
-
+  
+  /**
+   * str is an example of data's string
+   */
   private str: string = `  
   "2016-07-25 15:47:24,459";"PC6";"OFF"
   "2016-07-25 19:47:24,459";"PC6";"ON"
@@ -70,19 +90,56 @@ export class DataService {
   "2016-07-25 16:44:50,065";"PC3";"ON"
   `;
 
+  
+  /**
+   * Dataset 1
+   */
   public dataExample1: Data[] = []; 
+  
+  /**
+   * Dataset 2
+   */
   public dataExample2: Data[] = [];
+  
+  /**
+   * Dataset 3
+   */
   public dataExample3: Data[] = [];
+  
+  /**
+   * Dataset 4
+   */
   public dataExample4: Data[] = [];
+  
+  /**
+   * Dataset 5
+   */
   public dataExample5: Data[] = [];
+  
+  /**
+   * Dataset 6
+   */
   public dataExample6: Data[] = [];
 
+  /**
+   * Constructor
+   * Launch generateExample with parameters this.str to fill all Dataset
+   */
   constructor() {
     this.generateExample(this.str);
   }
 
+  /**
+   * Parse of str to obtain DATA[]
+   * @param str 
+   * @param sensorId 
+   * @param f 
+   * @returns DATA[]
+   */
   private parse<T>(str: string, sensorId: string, f: (s: string) => T): DATA<T>[] {
-
+    /**
+     * Const to parse DATA
+     */
     const L: DATA < T > [] = str.trim().split("\n").map(s => s.trim()).filter(s => s!=="")
 
                  .map( s => s.split(";").map( s => s.slice(1, -1) ) )
@@ -102,6 +159,16 @@ export class DataService {
 
   }
 
+  /**
+   * Parse of str to obtain Data[]
+   * @param str 
+   * @param label 
+   * @param color 
+   * @param style 
+   * @param interpolation 
+   * @param f 
+   * @returns Data[]
+   */
   public generateData(str:string, label:string, color:string, style: "both"|"line"|"area",interpolation: "step"|"linear", f: (s:string)=>number):Data{
     let d: DATA<number>[] = this.parse<number>(str,label, f);
     let v: [number,number][] = [];
@@ -116,12 +183,21 @@ export class DataService {
     return da;
   }
 
+  /**
+   * Transform string in number
+   * @param s 
+   * @returns 1 if s=='ON', 0 if s=='OFF' else -1
+   */
   public parseBool(s: string):number {
     if(s=='ON') return 1;
     else if (s=='OFF') return 0;
     else return -1;
   }
 
+  /**
+   * Generate all dataset
+   * @param str 
+   */
   private generateExample(str:string){
     let d2: DATA<number>[] = this.parse<number>(str,"PC5", this.parseBool);
     let v2: [number,number][] = [];
@@ -149,6 +225,11 @@ export class DataService {
     this.dataExample6.push(this.generateData(str,"PC3","green","both", "step",this.parseBool));
   }
 
+  /**
+   * Get +1 or -1 on the param x
+   * @param x 
+   * @returns x+1 or x-1 (random)
+   */
   private getRandomInt(x:number){
     let alea: number;
     if(x==0){

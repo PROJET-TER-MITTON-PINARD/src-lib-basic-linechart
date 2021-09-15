@@ -2,12 +2,33 @@ import { Component, ElementRef, EventEmitter, HostListener, Input, OnInit, Outpu
 import {ScaleTime, ScaleLinear} from 'd3-scale';
 import {Selection} from 'd3-selection';
 import * as d3 from 'd3';
+import { fromEvent } from 'rxjs';
 
+/**
+ * Data's format for the component
+ */
 export interface Data {
+  /**
+   * Data's name
+   */
   label: string;
+
+  /**
+   * Data's values [timestamp,value][]
+   */
   values: [number,number][];
+  /**
+   * Line or area color you can fill with name, hexacode or rgb code.
+   */
   color: string;
+  /**
+   * Style of line
+   */
   style: "line" | "area" | "both";
+  /**
+   * Interpolation of line 
+   * Recommanded : step for discrete values and linear for continuous values
+   */
   interpolation: "linear" | "step";
 }
 
@@ -24,42 +45,186 @@ export interface Data {
   ]
 })
 export class BasicLinechartComponent implements OnInit {
+  /**
+   * Input width of the component
+   * Default value : 900
+   */
   @Input() width: number = 900;
-  @Input() height: number = 200; 
+  
+  /**
+   * Input height of the compenent
+   * Default value : 200
+   */
+  @Input() height: number = 200;
+  
+  /**
+   * Input data array that the component display
+   * Default value : []
+   */
   @Input() data: Data[] = [];
+
+  /**
+   * Input domain of the Axis Y
+   * Works only for continuous values
+   * Default value : [0,0]
+   */
   @Input() domain: [number, number] = [0,0];
+  
+  /**
+   * Input speed of zoom between 0 and 1
+   * Default value : 0.2
+   */
   @Input() speedZoom: number = 0.2;
+  
+  /**
+   * ElementRef of DOM Element root
+   * It's a svg with the linechart
+   */
   @ViewChild('root') timeline!: ElementRef;
+
+  /**
+   * ElementRef of DOM Element scroll
+   * It's a div that will be the scrollbar
+   */
   @ViewChild('scroll') scrollbar!: ElementRef;
+
+  /**
+   * ElementRef of DOM Element zone
+   * It's a div that will be the zone of scrollbar
+   */
   @ViewChild('zone') zoneScrollbar!: ElementRef;
+
+  /**
+   * ElementRef of DOM Element element
+   * It's a div that contains all the others Dom Element
+   */
   @ViewChild('element') compo!: ElementRef;
+
+  /**
+   * Input range of timestamp
+   * Default value : [0,0]
+   */
   @Input() range: [number,number] = [0,0];
+  
+  /**
+   * Output rangeChange that emit range 
+   */
   @Output() rangeChange = new EventEmitter<[number,number]>();
+  
+  /**
+   * Input currentTime
+   * Default value : 0
+   */
   @Input() currentTime: number = 0;
+  
+  /**
+   * Output currentTimeChange that emit currentTime
+   */
   @Output() currentTimeChange = new EventEmitter<number>();
   
-
-
+  /**
+   * Title of the component
+   */
   public title:string = 'Timeline : ';
-  private margin = { top: 20, right: 20, bottom: 20, left: 20 }; //marge interne au svg 
+  
+  /**
+   * Margin of the component
+   */
+  private margin:{top:number,right:number,bottom:number,left:number} = { top: 20, right: 20, bottom: 20, left: 50 }; //marge interne au svg 
+  
+  /**
+   * dataZoom is a copy of data with the range specify
+   */
   private dataZoom: Data[] = [];
+  
+  /**
+   * idZoom is the number of wheel notch
+   */
   private idZoom: number = 0;
+  
+  /**
+   * It's the smallest timestamp of data
+   */
   private minTime: number = 0;
+  
+  /**
+   * It's the biggest timestamp of data
+   */
   private maxTime: number = 0;
+  
+  /**
+   * It's the difference between the smallest and the biggest
+   */
   private lengthTime: number = 0;
+  
+  /**
+   * Width of the svg
+   */
   private svgWidth: number = 0;
+  
+  /**
+   * Height of the svg
+   */
   private svgHeight: number = 0;
+  
+  /**
+   * Scale of the X axis
+   */
   private scaleX: ScaleTime<number,number> = d3.scaleTime();
+  
+  /**
+   * Scale of the Y axis
+   */
   private scaleY: ScaleLinear<number,number> = d3.scaleLinear();
+
+  /**
+   * svg that contain the linechart and the axis
+   */
   private svg: any;
+
+  /**
+   * Array of area definition
+   */
   private area: d3.Area<[number, number]>[] = [];
+
+  /**
+   * Array of line definition
+   */
   private line: d3.Line<[number, number]>[] = [];
+
+  /**
+   * Svg definition of the tooltip
+   */
   private tooltip!: Selection<SVGGElement,unknown,null,undefined>;
+
+  /**
+   * data length before the new change
+   */
   private lastDatalength:number = 0;
+
+  /**
+   * Mode of the tooltip
+   */
   private modeToolTips: "normal" | "inverse" = "normal";
+
+  /**
+   * true if the currentTimeline is selected
+   */
   private currentTimeSelected:boolean = false;
+
+  /**
+   * true if the scrollbar is selected
+   */
   private scrollbarSelected:boolean = false;
+
+  /**
+   * Last position of the mouse
+   */
   private lastPos: number = 0;
+
+  /**
+   * true if the CTRL Key of keyBoard is push 
+   */
   private zoomSelected: boolean = false;
 
   @HostListener('window:keydown', ['$event'])
@@ -72,8 +237,11 @@ export class BasicLinechartComponent implements OnInit {
   handleKeyUp(){
     this.zoomSelected = false;
   }
-  
-  
+
+  /**
+   * Constructor : Init renderer
+   * @param renderer 
+   */
   constructor(private renderer: Renderer2) {   
   }
 
@@ -369,9 +537,8 @@ export class BasicLinechartComponent implements OnInit {
     this.compo.nativeElement.style.width = this.svgWidth+this.margin.left+"px";
     this.compo.nativeElement.style.padding = "10px 10px 10px 10px";
     this.renderer.listen(this.scrollbar.nativeElement, 'mousedown', (event:MouseEvent) => this.activeScrollbar(event));
-    this.renderer.listen(this.compo.nativeElement, 'mouseleave', () => this.desactiveScrollbar());
-    this.renderer.listen(this.compo.nativeElement, 'mouseup', () => this.desactiveScrollbar());
-    this.renderer.listen(this.compo.nativeElement,'mousemove', (event:MouseEvent) => this.updateRange(event));
+    this.renderer.listen(window, 'mouseup', () => this.desactiveScrollbar());
+    this.renderer.listen(window,'mousemove', (event:MouseEvent) => this.updateRange(event));
   }
 
   /**
